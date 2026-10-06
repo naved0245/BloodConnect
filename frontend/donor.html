@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Donor Portal — BloodConnect</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <a href="donor.html" class="nav-brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+      </svg>
+      BloodConnect
+    </a>
+    <div class="nav-user">
+      <span>Welcome, <strong id="donorNameDisplay">Donor</strong></span>
+      <span class="user-badge">Donor</span>
+      <button onclick="logout()" class="btn btn-sm btn-outline">Sign Out</button>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Top Grid: Profile & Scheduling -->
+    <div class="grid grid-2" style="margin-bottom: 2rem;">
+      <!-- Donor Profile Card -->
+      <div class="card">
+        <div class="card-title">
+          <span>My Donor Profile</span>
+          <span id="profileEligibility" class="badge badge-info">Checking...</span>
+        </div>
+        
+        <div style="display: flex; gap: 1.5rem; align-items: center; margin-bottom: 1.25rem;">
+          <div style="background: var(--primary-light); color: var(--primary); width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800;" id="profileBloodGroup">
+            --
+          </div>
+          <div>
+            <div style="font-size: 0.85rem; color: var(--text-muted);">Registered City:</div>
+            <strong id="profileCity" style="font-size: 1rem;">--</strong>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">Last Donation:</div>
+            <strong id="profileLastDonation" style="font-size: 0.95rem;">--</strong>
+          </div>
+        </div>
+
+        <div style="background: #f8fafc; border-radius: var(--radius); padding: 0.75rem; font-size: 0.85rem; color: var(--text-muted);">
+          <strong>Eligibility Rule:</strong> Minimum 90 days required between blood donations to protect donor health.
+        </div>
+      </div>
+
+      <!-- Schedule Donation Form -->
+      <div class="card">
+        <div class="card-title">
+          <span>Schedule Blood Donation</span>
+          <span class="badge badge-success">Appointment</span>
+        </div>
+
+        <div id="scheduleAlert"></div>
+
+        <form id="scheduleForm" onsubmit="handleScheduleDonation(event)">
+          <div class="form-group">
+            <label>Select Hospital / Blood Bank</label>
+            <select id="scheduleHospitalSelect" class="form-control" required>
+              <option value="">Loading hospitals...</option>
+            </select>
+          </div>
+
+          <div class="grid grid-2" style="gap: 1rem;">
+            <div class="form-group">
+              <label>Donation Date</label>
+              <input type="date" id="scheduleDate" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label>Time Slot</label>
+              <select id="scheduleTimeSlot" class="form-control" required>
+                <option value="09:00 AM - 11:00 AM">09:00 AM - 11:00 AM</option>
+                <option value="11:00 AM - 01:00 PM">11:00 AM - 01:00 PM</option>
+                <option value="02:00 PM - 04:00 PM">02:00 PM - 04:00 PM</option>
+                <option value="04:00 PM - 06:00 PM">04:00 PM - 06:00 PM</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%;">Confirm Appointment</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- My Appointments Table -->
+    <div class="card" style="margin-bottom: 2rem;">
+      <div class="card-title">
+        <span>My Donation History & Appointments</span>
+      </div>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Hospital</th>
+              <th>Blood Group</th>
+              <th>Date</th>
+              <th>Time Slot</th>
+              <th>Status</th>
+              <th>Remarks</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="donorAppointmentsBody">
+            <tr><td colspan="7" style="text-align: center;">Loading appointments...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Open Requests Table -->
+    <div class="card">
+      <div class="card-title">
+        <span>Urgent Hospital Blood Demands</span>
+      </div>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Blood Group</th>
+              <th>Units Needed</th>
+              <th>Urgency</th>
+              <th>Hospital</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody id="donorRequestsBody">
+            <tr><td colspan="5" style="text-align: center;">Loading requests...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2026 BloodConnect — Academic Final-Year Blood Donation Management System.</p>
+  </footer>
+
+  <script src="js/script.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Set default minimum date to today
+      const today = new Date().toISOString().split("T")[0];
+      const dateInput = document.getElementById("scheduleDate");
+      if (dateInput) {
+        dateInput.min = today;
+        dateInput.value = today;
+      }
+      initDonorPage();
+    });
+  </script>
+</body>
+</html>

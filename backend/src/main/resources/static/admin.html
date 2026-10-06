@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal — BloodConnect</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <a href="admin.html" class="nav-brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+      </svg>
+      BloodConnect
+    </a>
+    <div class="nav-user">
+      <span>System Administrator</span>
+      <span class="user-badge" style="background:var(--danger-bg); color:var(--danger);">Admin</span>
+      <button onclick="logout()" class="btn btn-sm btn-outline">Sign Out</button>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Stat Cards -->
+    <div class="grid grid-4" style="margin-bottom: 2rem;">
+      <div class="stat-card">
+        <div class="stat-label">Total Donors</div>
+        <div class="stat-val" id="statDonors">0</div>
+      </div>
+      <div class="stat-card" style="border-left-color: var(--success);">
+        <div class="stat-label">Approved Hospitals</div>
+        <div class="stat-val" id="statHospitals">0</div>
+      </div>
+      <div class="stat-card" style="border-left-color: var(--warning);">
+        <div class="stat-label">Pending Approval</div>
+        <div class="stat-val" id="statPendingHospitals">0</div>
+      </div>
+      <div class="stat-card" style="border-left-color: #3b82f6;">
+        <div class="stat-label">Total Blood Units</div>
+        <div class="stat-val" id="statBloodUnits">0</div>
+      </div>
+    </div>
+
+    <!-- Hospital Approvals Section -->
+    <div class="card" style="margin-bottom: 2rem;">
+      <div class="card-title">
+        <span>Hospital License Verifications</span>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+        Hospitals with <strong>PENDING</strong> status cannot log in until approved by an administrator.
+      </p>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Hospital Name</th>
+              <th>License No.</th>
+              <th>City</th>
+              <th>Contact</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="adminHospitalsBody">
+            <tr><td colspan="6" style="text-align: center;">Loading hospitals...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- User Management Section -->
+    <div class="card" style="margin-bottom: 2rem;">
+      <div class="card-title">
+        <span>User Management</span>
+      </div>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Full Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="adminUsersBody">
+            <tr><td colspan="5" style="text-align: center;">Loading users...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- System Blood Inventory Overview -->
+    <div class="card">
+      <div class="card-title">
+        <span>System-Wide Blood Inventory Overview</span>
+      </div>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Hospital</th>
+              <th>City</th>
+              <th>Blood Group</th>
+              <th>Units Available</th>
+              <th>Last Updated</th>
+            </tr>
+          </thead>
+          <tbody id="adminInventoryBody">
+            <tr><td colspan="5" style="text-align: center;">Loading system inventory...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2026 BloodConnect — Academic Final-Year Blood Donation Management System.</p>
+  </footer>
+
+  <script src="js/script.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", initAdminPage);
+  </script>
+</body>
+</html>

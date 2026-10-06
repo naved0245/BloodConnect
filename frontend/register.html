@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register — BloodConnect</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .tab-btn {
+      flex: 1;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      background: #f1f5f9;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+    .tab-btn.active {
+      background: white;
+      border-bottom: 2px solid var(--primary);
+      color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+      </svg>
+      BloodConnect
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="login.html">Sign In</a></li>
+    </ul>
+  </nav>
+
+  <div class="container" style="max-width: 600px; margin-top: 1.5rem;">
+    <!-- Tab Selector -->
+    <div style="display: flex; gap: 0.5rem; margin-bottom: -1px;">
+      <button id="tabDonorBtn" class="tab-btn active" onclick="switchTab('donor')">Register as Donor</button>
+      <button id="tabHospitalBtn" class="tab-btn" onclick="switchTab('hospital')">Register Hospital</button>
+    </div>
+
+    <div class="card" style="border-top-left-radius: 0;">
+      <div id="regAlert"></div>
+
+      <!-- Donor Registration Form -->
+      <div id="donorFormSection">
+        <h3 style="margin-bottom: 0.5rem; font-weight: 700;">Blood Donor Registration</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+          Must be at least 18 years of age. A 90-day cooldown interval applies after each donation.
+        </p>
+
+        <form id="customerRegForm" onsubmit="handleCustomerRegister(event)">
+          <div class="grid grid-2" style="gap: 1rem;">
+            <div class="form-group">
+              <label>Full Name</label>
+              <input type="text" name="fullName" class="form-control" placeholder="John Doe" required>
+            </div>
+            <div class="form-group">
+              <label>Email Address</label>
+              <input type="email" name="email" class="form-control" placeholder="john@example.com" required>
+            </div>
+          </div>
+
+          <div class="grid grid-2" style="gap: 1rem;">
+            <div class="form-group">
+              <label>Password</label>
+              <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+            </div>
+            <div class="form-group">
+              <label>Phone Number</label>
+              <input type="text" name="phone" class="form-control" placeholder="9876543210" required>
+            </div>
+          </div>
+
+          <div class="grid grid-3" style="gap: 0.75rem;">
+            <div class="form-group">
+              <label>Blood Group</label>
+              <select name="bloodGroup" class="form-control" required>
+                <option value="">Select</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Date of Birth</label>
+              <input type="date" name="dateOfBirth" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label>Gender</label>
+              <select name="gender" class="form-control" required>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-2" style="gap: 1rem;">
+            <div class="form-group">
+              <label>City</label>
+              <input type="text" name="city" class="form-control" placeholder="Mumbai" required>
+            </div>
+            <div class="form-group">
+              <label>Pincode</label>
+              <input type="text" name="pincode" class="form-control" placeholder="400001" required>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">Register as Donor</button>
+        </form>
+      </div>
+
+      <!-- Hospital Registration Form -->
+      <div id="hospitalFormSection" style="display: none;">
+        <h3 style="margin-bottom: 0.5rem; font-weight: 700;">Hospital Blood Bank Registration</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+          Note: Hospital accounts are registered as <strong>PENDING</strong> and must be verified by the System Administrator before login is permitted.
+        </p>
+
+        <form id="hospitalRegForm" onsubmit="handleHospitalRegister(event)">
+          <div class="grid grid-2" style="gap: 1rem;">
+            <div class="form-group">
+              <label>Hospital / Clinic Name</label>
+              <input type="text" name="hospitalName" class="form-control" placeholder="City General Hospital" required>
+            </div>
+            <div class="form-group">
+              <label>License / Registration Number</label>
+              <input type="text" name="licenseNumber" class="form-control" placeholder="HOSP-LIC-1002" required>
+            </div>
+          </div>
+
+          <div class="grid grid-2" style="gap: 1rem;">
+            <div class="form-group">
+              <label>Official Email</label>
+              <input type="email" name="email" class="form-control" placeholder="bloodbank@hospital.org" required>
+            </div>
+            <div class="form-group">
+              <label>Password</label>
+              <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+            </div>
+          </div>
+
+          <div class="grid grid-2" style="gap: 1rem;">
+            <div class="form-group">
+              <label>Contact Person</label>
+              <input type="text" name="contactPerson" class="form-control" placeholder="Dr. Sarah Sharma" required>
+            </div>
+            <div class="form-group">
+              <label>Contact Phone</label>
+              <input type="text" name="contactPhone" class="form-control" placeholder="9123456789" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Complete Address</label>
+            <input type="text" name="address" class="form-control" placeholder="123 Health Ave, Civil Lines" required>
+          </div>
+
+          <div class="grid grid-2" style="gap: 1rem;">
+            <div class="form-group">
+              <label>City</label>
+              <input type="text" name="city" class="form-control" placeholder="Mumbai" required>
+            </div>
+            <div class="form-group">
+              <label>Pincode</label>
+              <input type="text" name="pincode" class="form-control" placeholder="400001" required>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">Submit for Verification</button>
+        </form>
+      </div>
+
+      <div style="margin-top: 1.5rem; font-size: 0.85rem; text-align: center; color: var(--text-muted);">
+        Already registered? <a href="login.html" style="color: var(--primary); font-weight: 600;">Sign In here</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2026 BloodConnect — Academic Final-Year Blood Donation Management System.</p>
+  </footer>
+
+  <script src="js/script.js"></script>
+  <script>
+    function switchTab(type) {
+      const donorBtn = document.getElementById("tabDonorBtn");
+      const hospBtn = document.getElementById("tabHospitalBtn");
+      const donorSec = document.getElementById("donorFormSection");
+      const hospSec = document.getElementById("hospitalFormSection");
+
+      if (type === 'donor') {
+        donorBtn.classList.add("active");
+        hospBtn.classList.remove("active");
+        donorSec.style.display = "block";
+        hospSec.style.display = "none";
+      } else {
+        hospBtn.classList.add("active");
+        donorBtn.classList.remove("active");
+        donorSec.style.display = "none";
+        hospSec.style.display = "block";
+      }
+      showAlert("regAlert", "");
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BloodConnect — Blood Donation Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+      </svg>
+      BloodConnect
+    </a>
+    <ul class="nav-links">
+      <li><a href="#compatibility">Compatibility</a></li>
+      <li><a href="#urgent-requests">Urgent Requests</a></li>
+      <li><a href="login.html">Sign In</a></li>
+      <li><a href="register.html" class="btn btn-sm btn-primary">Register</a></li>
+    </ul>
+    <div id="navUserArea" class="nav-user"></div>
+  </nav>
+
+  <!-- Hero Section -->
+  <div class="container">
+    <section class="hero">
+      <h1>Donate Blood, Save Lives</h1>
+      <p>A centralized academic platform connecting generous blood donors, authorized hospital blood banks, and healthcare administrators in real-time.</p>
+      <div>
+        <a href="register.html" class="btn btn-primary" style="background:white; color:#b91c1c; margin-right: 0.75rem;">Become a Donor</a>
+        <a href="login.html" class="btn btn-outline" style="border-color:white; color:white;">Access Portal</a>
+      </div>
+    </section>
+
+    <!-- 3 Portals Explanation Cards -->
+    <div class="grid grid-3" style="margin-bottom: 2.5rem;">
+      <div class="card">
+        <div class="card-title">
+          <span>1. Customer / Donor</span>
+          <span class="badge badge-info">Donor</span>
+        </div>
+        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+          Register as a blood donor, monitor your 90-day cooldown eligibility, schedule appointments at approved hospitals, and view history.
+        </p>
+        <a href="register.html" class="btn btn-sm btn-outline">Join as Donor &rarr;</a>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>2. Hospital Management</span>
+          <span class="badge badge-warning">Hospital</span>
+        </div>
+        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+          Manage real-time inventory for all 8 blood groups, process donor appointments, and broadcast urgent blood supply requests.
+        </p>
+        <a href="register.html" class="btn btn-sm btn-outline">Register Hospital &rarr;</a>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>3. Administrator</span>
+          <span class="badge badge-danger">Admin</span>
+        </div>
+        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+          Verify and approve hospital licenses, monitor system-wide blood supplies, manage user accounts, and view platform analytics.
+        </p>
+        <a href="login.html" class="btn btn-sm btn-outline">Admin Login &rarr;</a>
+      </div>
+    </div>
+
+    <!-- Live Urgent Blood Requests -->
+    <section id="urgent-requests" class="card" style="margin-bottom: 2.5rem;">
+      <div class="card-title">
+        <span>🚨 Active Emergency Blood Requests</span>
+        <span class="badge badge-danger">Live Demands</span>
+      </div>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom: 0.5rem;">
+        Hospitals with critical shortages post requirements here. Donors with compatible types are urged to schedule appointments.
+      </p>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Blood Group</th>
+              <th>Required Units</th>
+              <th>Urgency</th>
+              <th>Hospital & Location</th>
+              <th>Contact Phone</th>
+              <th>Posted Date</th>
+            </tr>
+          </thead>
+          <tbody id="publicRequestsBody">
+            <tr><td colspan="6" style="text-align:center;">Loading requests...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Blood Compatibility Matrix -->
+    <section id="compatibility" class="card" style="margin-bottom: 2.5rem;">
+      <div class="card-title">
+        <span>Blood Group Compatibility Guide</span>
+        <span class="badge badge-info">Informational Guide</span>
+      </div>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom: 1rem;">
+        Informational academic guide for blood donation coordination. Not a clinical medical device.
+      </p>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Donor Group</th>
+              <th>Can Donate To (Recipients)</th>
+              <th>Can Receive Blood From</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>O-</strong></td><td>All Blood Groups (Universal Donor)</td><td>O- only</td></tr>
+            <tr><td><strong>O+</strong></td><td>O+, A+, B+, AB+</td><td>O+, O-</td></tr>
+            <tr><td><strong>A-</strong></td><td>A-, A+, AB-, AB+</td><td>A-, O-</td></tr>
+            <tr><td><strong>A+</strong></td><td>A+, AB+</td><td>A+, A-, O+, O-</td></tr>
+            <tr><td><strong>B-</strong></td><td>B-, B+, AB-, AB+</td><td>B-, O-</td></tr>
+            <tr><td><strong>B+</strong></td><td>B+, AB+</td><td>B+, B-, O+, O-</td></tr>
+            <tr><td><strong>AB-</strong></td><td>AB-, AB+</td><td>AB-, A-, B-, O-</td></tr>
+            <tr><td><strong>AB+</strong></td><td>AB+ only</td><td>All Blood Groups (Universal Recipient)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2026 BloodConnect — Academic Final-Year Blood Donation Management System.</p>
+  </footer>
+
+  <script src="js/script.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", initLandingPage);
+  </script>
+</body>
+</html>
