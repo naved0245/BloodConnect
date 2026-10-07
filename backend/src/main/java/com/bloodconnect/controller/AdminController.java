@@ -2,6 +2,7 @@ package com.bloodconnect.controller;
 
 import com.bloodconnect.model.*;
 import com.bloodconnect.repository.*;
+import com.bloodconnect.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +15,9 @@ import java.util.*;
 @RequestMapping("/api/admin")
 @CrossOrigin(origins = "*")
 public class AdminController {
+
+    @Autowired
+    private AuthService authService;
 
     @Autowired
     private UserRepository userRepository;
@@ -105,6 +109,29 @@ public class AdminController {
         return ResponseEntity.ok(Map.of("success", true, "data", users));
     }
 
+    @PostMapping("/create")
+    public ResponseEntity<?> createAdmin(
+            @RequestBody Map<String, Object> body,
+            @RequestHeader(value = "X-Admin-Email", required = false) String headerAdminEmail) {
+        try {
+            String requester = headerAdminEmail != null && !headerAdminEmail.trim().isEmpty()
+                ? headerAdminEmail
+                : (String) body.get("requesterEmail");
+            if (requester == null || requester.trim().isEmpty()) {
+                requester = (String) body.get("adminEmail");
+            }
+
+            User admin = authService.createAdmin(body, requester);
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Administrator account created successfully.",
+                "adminId", admin.getId()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
     @PutMapping("/users/{id}/toggle-status")
     public ResponseEntity<?> toggleUserStatus(@PathVariable Long id) {
         try {
@@ -112,7 +139,7 @@ public class AdminController {
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
             if ("ADMIN".equals(user.getRole())) {
-                throw new RuntimeException("Cannot deactivate primary administrator");
+                throw new RuntimeException("Cannot deactivate administrator accounts");
             }
 
             user.setIsActive(!user.getIsActive());

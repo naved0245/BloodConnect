@@ -609,6 +609,11 @@ async function initAdminPage() {
     const user = requireAuth("ADMIN");
     if (!user) return;
 
+    const navName = document.getElementById("navAdminName");
+    if (navName && user.fullName) {
+        navName.innerText = user.fullName;
+    }
+
     loadAdminStats();
     loadAdminHospitals();
     loadAdminUsers();
@@ -758,5 +763,71 @@ async function loadAdminInventory() {
         }
     } catch (e) {
         console.error("Admin inventory failed", e);
+    }
+}
+
+async function handleCreateAdmin(e) {
+    e.preventDefault();
+    const fullName = document.getElementById("adminFullName").value.trim();
+    const email = document.getElementById("adminEmail").value.trim();
+    const password = document.getElementById("adminPassword").value;
+    const confirmPassword = document.getElementById("adminConfirmPassword").value;
+    const btn = document.getElementById("createAdminBtn");
+
+    showAlert("createAdminAlert", "");
+
+    if (!fullName || !email || !password || !confirmPassword) {
+        showAlert("createAdminAlert", "All fields are required.");
+        return;
+    }
+
+    if (!email.includes("@") || !email.includes(".")) {
+        showAlert("createAdminAlert", "Please enter a valid email address.");
+        return;
+    }
+
+    if (password !== confirmPassword) {
+        showAlert("createAdminAlert", "Passwords do not match.");
+        return;
+    }
+
+    const currentUser = getCurrentUser();
+    if (!currentUser || currentUser.role !== "ADMIN") {
+        showAlert("createAdminAlert", "Unauthorized: Only administrators can create new admin accounts.");
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = "Creating...";
+
+    try {
+        const res = await fetch(`${API_BASE}/admin/create`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Admin-Email": currentUser.email
+            },
+            body: JSON.stringify({
+                fullName,
+                email,
+                password,
+                confirmPassword,
+                requesterEmail: currentUser.email
+            })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+            showAlert("createAdminAlert", data.message || "Administrator account created successfully!", "success");
+            document.getElementById("createAdminForm").reset();
+            loadAdminUsers();
+        } else {
+            showAlert("createAdminAlert", data.message || "Failed to create administrator.");
+        }
+    } catch (err) {
+        showAlert("createAdminAlert", "Server communication error. Please try again.");
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "Create Admin";
     }
 }

@@ -17,7 +17,7 @@
       BloodConnect
     </a>
     <div class="nav-user">
-      <span>System Administrator</span>
+      <span id="navAdminName">System Administrator</span>
       <span class="user-badge" style="background:var(--danger-bg); color:var(--danger);">Admin</span>
       <button onclick="logout()" class="btn btn-sm btn-outline">Sign Out</button>
     </div>
@@ -69,6 +69,45 @@
           </tbody>
         </table>
       </div>
+    </div>
+
+    <!-- Create Administrator Section -->
+    <div class="card" style="margin-bottom: 2rem;">
+      <div class="card-title">
+        <span>Create Administrator</span>
+        <span class="badge badge-info">Admin Only</span>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+        Register a new administrator account with full administrative privileges.
+      </p>
+
+      <div id="createAdminAlert"></div>
+
+      <form id="createAdminForm" onsubmit="handleCreateAdmin(event)" style="max-width: 640px;">
+        <div class="grid grid-2" style="gap: 1rem; margin-bottom: 1rem;">
+          <div class="form-group">
+            <label for="adminFullName">Full Name</label>
+            <input type="text" id="adminFullName" class="form-control" placeholder="Full Name" required>
+          </div>
+          <div class="form-group">
+            <label for="adminEmail">Email Address</label>
+            <input type="email" id="adminEmail" class="form-control" placeholder="admin@example.com" required>
+          </div>
+        </div>
+
+        <div class="grid grid-2" style="gap: 1rem; margin-bottom: 1.25rem;">
+          <div class="form-group">
+            <label for="adminPassword">Password</label>
+            <input type="password" id="adminPassword" class="form-control" placeholder="••••••••" required>
+          </div>
+          <div class="form-group">
+            <label for="adminConfirmPassword">Confirm Password</label>
+            <input type="password" id="adminConfirmPassword" class="form-control" placeholder="••••••••" required>
+          </div>
+        </div>
+
+        <button type="submit" id="createAdminBtn" class="btn btn-primary">Create Admin</button>
+      </form>
     </div>
 
     <!-- User Management Section -->

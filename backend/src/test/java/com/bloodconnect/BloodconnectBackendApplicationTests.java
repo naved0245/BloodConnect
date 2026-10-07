@@ -213,4 +213,101 @@ class BloodconnectBackendApplicationTests {
         // Inventory must still be 2 units (non-negative protection)
         assertEquals(2, inventoryRepository.findByHospitalIdAndBloodGroup(hosp.getId(), "A+").orElseThrow().getUnitsAvailable());
     }
+
+    @Test
+    void testHardcodedPrimaryAdminLogin() {
+        Map<String, Object> admin = authService.login("admin@bloodconnect.com", "Admin@123");
+        assertNotNull(admin);
+        assertEquals("admin@bloodconnect.com", admin.get("email"));
+        assertEquals("ADMIN", admin.get("role"));
+    }
+
+    @Test
+    void testInvalidPrimaryAdminCredentials() {
+        assertThrows(RuntimeException.class, () -> {
+            authService.login("admin@bloodconnect.com", "WrongPassword@123");
+        });
+    }
+
+    @Test
+    void testCreateAdminAndDatabaseAdminLogin() {
+        Map<String, Object> newAdminReq = Map.of(
+            "fullName", "Sub Administrator",
+            "email", "testadmin@bloodconnect.com",
+            "password", "Test@123",
+            "confirmPassword", "Test@123"
+        );
+
+        // 1. Primary admin creates database admin
+        User created = authService.createAdmin(newAdminReq, "admin@bloodconnect.com");
+        assertNotNull(created.getId());
+        assertEquals("testadmin@bloodconnect.com", created.getEmail());
+        assertEquals("ADMIN", created.getRole());
+        assertTrue(created.getPasswordHash().startsWith("$2a$")); // BCrypt hashed
+
+        // 2. Newly created admin logs in successfully
+        Map<String, Object> loginData = authService.login("testadmin@bloodconnect.com", "Test@123");
+        assertEquals("testadmin@bloodconnect.com", loginData.get("email"));
+        assertEquals("ADMIN", loginData.get("role"));
+
+        // 3. Database admin can also create another admin
+        Map<String, Object> secondAdminReq = Map.of(
+            "fullName", "Second Administrator",
+            "email", "secondadmin@bloodconnect.com",
+            "password", "Second@123",
+            "confirmPassword", "Second@123"
+        );
+        User secondCreated = authService.createAdmin(secondAdminReq, "testadmin@bloodconnect.com");
+        assertNotNull(secondCreated.getId());
+        assertEquals("secondadmin@bloodconnect.com", secondCreated.getEmail());
+    }
+
+    @Test
+    void testDuplicateAdminEmail() {
+        // Try creating with primary admin email
+        assertThrows(RuntimeException.class, () -> {
+            authService.createAdmin(Map.of(
+                "fullName", "Duplicate Admin",
+                "email", "admin@bloodconnect.com",
+                "password", "Pass@123",
+                "confirmPassword", "Pass@123"
+            ), "admin@bloodconnect.com");
+        });
+    }
+
+    @Test
+    void testUnauthorizedAdminCreation() {
+        Map<String, Object> req = Map.of(
+            "fullName", "Hack Admin",
+            "email", "hack@bloodconnect.com",
+            "password", "Hack@123",
+            "confirmPassword", "Hack@123"
+        );
+
+        // Unauthenticated (null or empty requester)
+        assertThrows(RuntimeException.class, () -> {
+            authService.createAdmin(req, null);
+        });
+
+        assertThrows(RuntimeException.class, () -> {
+            authService.createAdmin(req, "");
+        });
+
+        // Customer / unauthorized user attempting admin creation
+        User customer = authService.registerCustomer(Map.of(
+            "fullName", "Normal Donor",
+            "email", "donor.attacker@bloodconnect.com",
+            "password", "Donor@123",
+            "phone", "9876543299",
+            "bloodGroup", "O-",
+            "dateOfBirth", "1999-01-01",
+            "gender", "Female",
+            "city", "Delhi",
+            "pincode", "110001"
+        ));
+
+        assertThrows(RuntimeException.class, () -> {
+            authService.createAdmin(req, customer.getEmail());
+        });
+    }
 }

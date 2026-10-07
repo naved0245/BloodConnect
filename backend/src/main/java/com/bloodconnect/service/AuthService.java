@@ -22,6 +22,9 @@ public class AuthService {
     @Autowired
     private HospitalRepository hospitalRepository;
 
+    public static final String ADMIN_EMAIL = "admin@bloodconnect.com";
+    public static final String ADMIN_PASSWORD = "Admin@123";
+
     @Autowired
     private BloodInventoryRepository inventoryRepository;
 
@@ -29,7 +32,27 @@ public class AuthService {
     private PasswordEncoder passwordEncoder;
 
     public Map<String, Object> login(String email, String password) {
-        User user = userRepository.findByEmail(email)
+        if (email == null || password == null) {
+            throw new RuntimeException("Email and password are required");
+        }
+
+        // 1. Primary hardcoded admin authentication (bypasses database entirely)
+        if (ADMIN_EMAIL.equalsIgnoreCase(email.trim())) {
+            if (ADMIN_PASSWORD.equals(password)) {
+                Map<String, Object> adminResult = new HashMap<>();
+                adminResult.put("id", 0L);
+                adminResult.put("email", ADMIN_EMAIL);
+                adminResult.put("fullName", "System Administrator");
+                adminResult.put("phone", "9876543210");
+                adminResult.put("role", "ADMIN");
+                return adminResult;
+            } else {
+                throw new RuntimeException("Invalid email or password");
+            }
+        }
+
+        // 2. Database authentication for database users (CUSTOMER, HOSPITAL, or database-created ADMIN)
+        User user = userRepository.findByEmail(email.trim())
                 .orElseThrow(() -> new RuntimeException("Invalid email or password"));
 
         if (!passwordEncoder.matches(password, user.getPasswordHash())) {
@@ -60,6 +83,71 @@ public class AuthService {
         }
 
         return result;
+    }
+
+    @Transactional
+    public User createAdmin(Map<String, Object> req, String requesterEmail) {
+        if (requesterEmail == null || requesterEmail.trim().isEmpty()) {
+            throw new RuntimeException("Unauthorized: Administrator authentication required");
+        }
+
+        // Verify requester is either the primary hardcoded admin or an active database admin
+        boolean isAuthorized = false;
+        if (ADMIN_EMAIL.equalsIgnoreCase(requesterEmail.trim())) {
+            isAuthorized = true;
+        } else {
+            Optional<User> requesterOpt = userRepository.findByEmail(requesterEmail.trim());
+            if (requesterOpt.isPresent() && requesterOpt.get().getIsActive() && "ADMIN".equals(requesterOpt.get().getRole())) {
+                isAuthorized = true;
+            }
+        }
+
+        if (!isAuthorized) {
+            throw new RuntimeException("Unauthorized: Only administrators can create admin accounts");
+        }
+
+        String fullName = req.get("fullName") != null ? ((String) req.get("fullName")).trim() : "";
+        String email = req.get("email") != null ? ((String) req.get("email")).trim() : "";
+        String password = req.get("password") != null ? (String) req.get("password") : "";
+
+        if (fullName.isEmpty()) {
+            throw new RuntimeException("Full name is required");
+        }
+        if (email.isEmpty()) {
+            throw new RuntimeException("Email is required");
+        }
+        if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+            throw new RuntimeException("Invalid email format");
+        }
+        if (password.isEmpty()) {
+            throw new RuntimeException("Password is required");
+        }
+        if (req.containsKey("confirmPassword")) {
+            String confirmPassword = (String) req.get("confirmPassword");
+            if (!password.equals(confirmPassword)) {
+                throw new RuntimeException("Passwords do not match");
+            }
+        }
+
+        // Email uniqueness validation against primary admin and existing database users
+        if (ADMIN_EMAIL.equalsIgnoreCase(email) || userRepository.existsByEmail(email)) {
+            throw new RuntimeException("Email is already registered");
+        }
+
+        String phone = req.get("phone") != null && !((String) req.get("phone")).trim().isEmpty()
+                ? ((String) req.get("phone")).trim()
+                : "N/A";
+
+        User newAdmin = new User(
+            email,
+            passwordEncoder.encode(password),
+            fullName,
+            phone,
+            "ADMIN",
+            true
+        );
+
+        return userRepository.save(newAdmin);
     }
 
     @Transactional
