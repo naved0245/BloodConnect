@@ -19,5 +19,5 @@ COPY --from=build /app/target/backend-0.0.1-SNAPSHOT.jar app.jar
 # Expose default port
 EXPOSE 8080
 
-# Run Spring Boot app listening on Render's dynamic $PORT (falling back to 8080)
-ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT:-8080} -jar app.jar"]
+# Run Spring Boot app listening on Render's dynamic $PORT (falling back to 8080) and binding to 0.0.0.0
+ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT:-8080} -Dserver.address=0.0.0.0 -jar app.jar"]
