@@ -220,6 +220,18 @@ class BloodconnectBackendApplicationTests {
         assertNotNull(admin);
         assertEquals("admin@bloodconnect.com", admin.get("email"));
         assertEquals("ADMIN", admin.get("role"));
+
+        // Test with explicit role = "ADMIN", mixed-case and whitespace
+        Map<String, Object> adminWithRole = authService.login("  Admin@BloodConnect.com  ", "Admin@123", "ADMIN");
+        assertNotNull(adminWithRole);
+        assertEquals("ADMIN", adminWithRole.get("role"));
+    }
+
+    @Test
+    void testPrimaryAdminRoleMismatch() {
+        assertThrows(RuntimeException.class, () -> {
+            authService.login("admin@bloodconnect.com", "Admin@123", "CUSTOMER");
+        });
     }
 
     @Test

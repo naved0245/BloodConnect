@@ -32,6 +32,10 @@ public class AuthService {
     private PasswordEncoder passwordEncoder;
 
     public Map<String, Object> login(String email, String password) {
+        return login(email, password, null);
+    }
+
+    public Map<String, Object> login(String email, String password, String selectedRole) {
         if (email == null || password == null) {
             throw new RuntimeException("Email and password are required");
         }
@@ -39,6 +43,9 @@ public class AuthService {
         // 1. Primary hardcoded admin authentication (bypasses database entirely)
         if (ADMIN_EMAIL.equalsIgnoreCase(email.trim())) {
             if (ADMIN_PASSWORD.equals(password)) {
+                if (selectedRole != null && !selectedRole.trim().isEmpty() && !"ADMIN".equalsIgnoreCase(selectedRole.trim())) {
+                    throw new RuntimeException("Role mismatch: Specified role does not match account privileges");
+                }
                 Map<String, Object> adminResult = new HashMap<>();
                 adminResult.put("id", 0L);
                 adminResult.put("email", ADMIN_EMAIL);
@@ -57,6 +64,10 @@ public class AuthService {
 
         if (!passwordEncoder.matches(password, user.getPasswordHash())) {
             throw new RuntimeException("Invalid email or password");
+        }
+
+        if (selectedRole != null && !selectedRole.trim().isEmpty() && !user.getRole().equalsIgnoreCase(selectedRole.trim())) {
+            throw new RuntimeException("Role mismatch: Specified role does not match account privileges");
         }
 
         if (!user.getIsActive()) {

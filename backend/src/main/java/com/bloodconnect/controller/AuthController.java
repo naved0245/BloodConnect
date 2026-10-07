@@ -20,7 +20,14 @@ public class AuthController {
         try {
             String email = body.get("email");
             String password = body.get("password");
-            Map<String, Object> user = authService.login(email, password);
+            String role = body.get("role");
+            if (role == null) {
+                role = body.get("selected_role");
+            }
+            if (role == null) {
+                role = body.get("selectedRole");
+            }
+            Map<String, Object> user = authService.login(email, password, role);
             return ResponseEntity.ok(Map.of("success", true, "user", user));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));

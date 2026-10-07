@@ -130,7 +130,7 @@ async function handleLogin(e) {
             btn.innerText = "Sign In";
         }
     } catch (err) {
-        showAlert("loginAlert", "Unable to reach server. Please ensure Spring Boot is running on port 8080.");
+        showAlert("loginAlert", "Unable to connect to server. If the server is starting up (Render free tier), please wait 30 seconds and try again.");
         btn.disabled = false;
         btn.innerText = "Sign In";
     }
