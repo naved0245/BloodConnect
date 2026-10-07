@@ -2,9 +2,10 @@
 // BloodConnect — Frontend JavaScript (Vanilla JS & Fetch API)
 // ==========================================================================
 
-const API_BASE = window.location.origin.startsWith("http") && window.location.port === "8080" 
-    ? "/api" 
-    : "http://localhost:8080/api";
+const API_BASE = window.location.hostname === "localhost" ||
+                 window.location.hostname === "127.0.0.1"
+    ? "http://localhost:8080/api"
+    : "https://bloodconnect-gl1r.onrender.com/api";
 
 // ---------------- Session Helpers ----------------
 function getCurrentUser() {
