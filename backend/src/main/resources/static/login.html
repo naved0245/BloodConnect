@@ -38,7 +38,10 @@
         </div>
 
         <div class="form-group">
-          <label for="loginPassword">Password</label>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+            <label for="loginPassword" style="margin-bottom: 0;">Password</label>
+            <a href="forgot-password.html" id="forgotPasswordLink" onclick="navigateToForgotPassword(event)" style="font-size: 0.82rem; color: var(--primary); text-decoration: none; font-weight: 500;">Forgot Password?</a>
+          </div>
           <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" required>
         </div>
 
@@ -47,6 +50,9 @@
 
       <div style="margin-top: 1.5rem; font-size: 0.85rem; text-align: center; color: var(--text-muted);">
         Don't have an account yet? <a href="register.html" style="color: var(--primary); font-weight: 600;">Register Here</a>
+        <div style="margin-top: 0.5rem;">
+          <a href="forgot-password.html" id="forgotPasswordBottomLink" onclick="navigateToForgotPassword(event)" style="color: var(--text-muted); font-size: 0.8rem; text-decoration: underline;">Forgot Password?</a>
+        </div>
       </div>
 
       <!-- Quick Demo Credentials Box for Viva Examiners / Evaluators -->

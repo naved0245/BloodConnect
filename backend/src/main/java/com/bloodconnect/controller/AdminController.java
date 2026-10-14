@@ -155,6 +155,53 @@ public class AdminController {
         }
     }
 
+    @PutMapping("/users/{id}/reset-password")
+    @Transactional
+    public ResponseEntity<?> resetUserPassword(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
+        try {
+            String newPassword = body.get("newPassword") != null ? body.get("newPassword") : body.get("password");
+            String confirmPassword = body.get("confirmPassword") != null ? body.get("confirmPassword") : body.get("confirm_password");
+            String email = body.get("email");
+
+            authService.adminResetPassword(id, email, newPassword, confirmPassword);
+
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Password has been successfully reset."
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/users/reset-password")
+    @Transactional
+    public ResponseEntity<?> resetUserPasswordPost(@RequestBody Map<String, Object> body) {
+        try {
+            Long userId = null;
+            if (body.get("userId") != null) {
+                userId = Long.valueOf(body.get("userId").toString());
+            } else if (body.get("id") != null) {
+                userId = Long.valueOf(body.get("id").toString());
+            }
+
+            String email = (String) body.get("email");
+            String newPassword = body.get("newPassword") != null ? (String) body.get("newPassword") : (String) body.get("password");
+            String confirmPassword = body.get("confirmPassword") != null ? (String) body.get("confirmPassword") : (String) body.get("confirm_password");
+
+            authService.adminResetPassword(userId, email, newPassword, confirmPassword);
+
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Password has been successfully reset."
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
     @GetMapping("/inventory")
     public ResponseEntity<?> getAllInventory() {
         List<BloodInventory> inventories = inventoryRepository.findAll();

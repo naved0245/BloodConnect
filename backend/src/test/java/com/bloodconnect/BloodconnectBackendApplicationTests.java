@@ -322,4 +322,91 @@ class BloodconnectBackendApplicationTests {
             authService.createAdmin(req, customer.getEmail());
         });
     }
+
+    @Test
+    void testAdminResetDonorPassword() {
+        User donorUser = authService.registerCustomer(Map.of(
+            "fullName", "Admin Reset Donor",
+            "email", "admin.reset.donor@bloodconnect.com",
+            "password", "DonorOld@123",
+            "phone", "9876543201",
+            "bloodGroup", "AB+",
+            "dateOfBirth", "1997-03-22",
+            "gender", "Male",
+            "city", "Bangalore",
+            "pincode", "560001"
+        ));
+
+        // Admin resets donor password
+        authService.adminResetPassword(donorUser.getId(), donorUser.getEmail(), "DonorNew@456", "DonorNew@456");
+
+        // Old password fails
+        assertThrows(RuntimeException.class, () -> {
+            authService.login("admin.reset.donor@bloodconnect.com", "DonorOld@123");
+        });
+
+        // New password succeeds
+        Map<String, Object> loginData = authService.login("admin.reset.donor@bloodconnect.com", "DonorNew@456");
+        assertEquals("admin.reset.donor@bloodconnect.com", loginData.get("email"));
+        assertEquals("CUSTOMER", loginData.get("role"));
+    }
+
+    @Test
+    void testAdminResetHospitalPassword() {
+        User hospUser = authService.registerHospital(Map.of(
+            "hospitalName", "Care Hospital Admin Reset",
+            "licenseNumber", "CARE-LIC-444",
+            "email", "care.adminreset@hospital.org",
+            "password", "CareOld@123",
+            "contactPhone", "9123456788",
+            "contactPerson", "Dr. Roy",
+            "address", "12 Hospital Road",
+            "city", "Hyderabad",
+            "pincode", "500001"
+        ));
+
+        // Approve hospital so it can log in
+        Hospital hosp = hospitalRepository.findByUserId(hospUser.getId()).orElseThrow();
+        adminController.verifyHospital(hosp.getId(), Map.of("action", "APPROVE"));
+
+        // Admin resets hospital password
+        authService.adminResetPassword(hospUser.getId(), hospUser.getEmail(), "CareNew@456", "CareNew@456");
+
+        // Old password fails
+        assertThrows(RuntimeException.class, () -> {
+            authService.login("care.adminreset@hospital.org", "CareOld@123");
+        });
+
+        // New password succeeds
+        Map<String, Object> loginData = authService.login("care.adminreset@hospital.org", "CareNew@456");
+        assertEquals("HOSPITAL", loginData.get("role"));
+    }
+
+    @Test
+    void testAdminResetPrimaryAdminPassword() {
+        authService.adminResetPassword(0L, "admin@bloodconnect.com", "AdminNew@456", "AdminNew@456");
+
+        // New password logs in successfully
+        Map<String, Object> loginData = authService.login("admin@bloodconnect.com", "AdminNew@456");
+        assertEquals("admin@bloodconnect.com", loginData.get("email"));
+        assertEquals("ADMIN", loginData.get("role"));
+    }
+
+    @Test
+    void testAdminResetPasswordValidation() {
+        // Mismatch passwords fail
+        assertThrows(RuntimeException.class, () -> {
+            authService.adminResetPassword(1L, "test@example.com", "NewPass@123", "Different@123");
+        });
+
+        // Short password fails
+        assertThrows(RuntimeException.class, () -> {
+            authService.adminResetPassword(1L, "test@example.com", "123", "123");
+        });
+
+        // Non-existent user fails
+        assertThrows(RuntimeException.class, () -> {
+            authService.adminResetPassword(999999L, "nonexistent@nowhere.com", "ValidPass@123", "ValidPass@123");
+        });
+    }
 }

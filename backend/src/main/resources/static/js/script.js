@@ -2,9 +2,10 @@
 // BloodConnect — Frontend JavaScript (Vanilla JS & Fetch API)
 // ==========================================================================
 
-const API_BASE = window.location.origin.startsWith("http") && window.location.port === "8080" 
-    ? "/api" 
-    : "http://localhost:8080/api";
+const API_BASE = window.location.hostname === "localhost" ||
+                 window.location.hostname === "127.0.0.1"
+    ? "http://localhost:8080/api"
+    : "https://bloodconnect-gl1r.onrender.com/api";
 
 // ---------------- Session Helpers ----------------
 function getCurrentUser() {
@@ -129,10 +130,16 @@ async function handleLogin(e) {
             btn.innerText = "Sign In";
         }
     } catch (err) {
-        showAlert("loginAlert", "Unable to reach server. Please ensure Spring Boot is running on port 8080.");
+        showAlert("loginAlert", "Unable to connect to server. If the server is starting up (Render free tier), please wait 30 seconds and try again.");
         btn.disabled = false;
         btn.innerText = "Sign In";
     }
+}
+
+// ---------------- 2.1 Forgot Password Flow ----------------
+function navigateToForgotPassword(e) {
+    if (e) e.preventDefault();
+    window.location.href = "forgot-password.html";
 }
 
 // ---------------- 3. Register Page (register.html) ----------------
@@ -608,6 +615,11 @@ async function initAdminPage() {
     const user = requireAuth("ADMIN");
     if (!user) return;
 
+    const navName = document.getElementById("navAdminName");
+    if (navName && user.fullName) {
+        navName.innerText = user.fullName;
+    }
+
     loadAdminStats();
     loadAdminHospitals();
     loadAdminUsers();
@@ -701,20 +713,95 @@ async function loadAdminUsers() {
         if (!tbody) return;
 
         if (data.success && data.data.length > 0) {
-            tbody.innerHTML = data.data.map(u => `
+            tbody.innerHTML = data.data.map(u => {
+                const safeName = (u.fullName || '').replace(/'/g, "\\'");
+                const safeEmail = (u.email || '').replace(/'/g, "\\'");
+                return `
                 <tr>
                     <td><strong>${u.fullName}</strong></td>
                     <td>${u.email}</td>
                     <td><span class="badge badge-info">${u.role}</span></td>
                     <td><span class="badge ${u.isActive ? 'badge-success' : 'badge-danger'}">${u.isActive ? 'ACTIVE' : 'DEACTIVATED'}</span></td>
                     <td>
-                        ${u.role !== 'ADMIN' ? `<button onclick="toggleUser(${u.id})" class="btn btn-sm btn-outline">${u.isActive ? 'Deactivate' : 'Activate'}</button>` : '<em style="color:#64748b;">System Admin</em>'}
+                        <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
+                            ${u.role !== 'ADMIN' ? `<button onclick="toggleUser(${u.id})" class="btn btn-sm btn-outline">${u.isActive ? 'Deactivate' : 'Activate'}</button>` : '<span class="badge badge-danger">Admin</span>'}
+                            <button onclick="openResetPasswordModal(${u.id}, '${safeName}', '${safeEmail}', '${u.role}')" class="btn btn-sm btn-primary">Reset Password</button>
+                        </div>
                     </td>
                 </tr>
-            `).join("");
+            `}).join("");
+        } else {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #64748b;">No users registered yet.</td></tr>`;
         }
     } catch (e) {
         console.error("Admin users failed", e);
+    }
+}
+
+function openResetPasswordModal(userId, fullName, email, role) {
+    const modal = document.getElementById("adminResetPasswordModal");
+    if (!modal) return;
+    document.getElementById("resetTargetUserId").value = userId || "";
+    document.getElementById("resetTargetUserEmail").value = email || "";
+    document.getElementById("resetTargetName").innerText = fullName || "User";
+    document.getElementById("resetTargetEmail").innerText = email || "";
+    document.getElementById("adminNewPassword").value = "";
+    document.getElementById("adminConfirmNewPassword").value = "";
+    showAlert("adminResetAlert", "");
+    modal.style.display = "flex";
+}
+
+function closeResetPasswordModal() {
+    const modal = document.getElementById("adminResetPasswordModal");
+    if (modal) modal.style.display = "none";
+}
+
+async function handleAdminResetPassword(e) {
+    e.preventDefault();
+    const userId = document.getElementById("resetTargetUserId").value;
+    const email = document.getElementById("resetTargetUserEmail").value;
+    const newPassword = document.getElementById("adminNewPassword").value;
+    const confirmPassword = document.getElementById("adminConfirmNewPassword").value;
+    const btn = document.getElementById("adminResetSubmitBtn");
+
+    if (newPassword !== confirmPassword) {
+        showAlert("adminResetAlert", "Passwords do not match.");
+        return;
+    }
+    if (newPassword.length < 6) {
+        showAlert("adminResetAlert", "Password must be at least 6 characters long.");
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = "Saving...";
+    showAlert("adminResetAlert", "");
+
+    try {
+        const endpoint = userId && userId !== "0"
+            ? `${API_BASE}/admin/users/${userId}/reset-password`
+            : `${API_BASE}/admin/users/reset-password`;
+
+        const res = await fetch(endpoint, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId, email, newPassword, confirmPassword })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            showAlert("adminResetAlert", `Password for ${email} has been successfully reset!`, "success");
+            setTimeout(() => {
+                closeResetPasswordModal();
+            }, 1200);
+        } else {
+            showAlert("adminResetAlert", data.message || "Failed to reset password.");
+        }
+    } catch (err) {
+        showAlert("adminResetAlert", "Server communication error. Please try again.");
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "Reset Password";
     }
 }
 
@@ -757,5 +844,71 @@ async function loadAdminInventory() {
         }
     } catch (e) {
         console.error("Admin inventory failed", e);
+    }
+}
+
+async function handleCreateAdmin(e) {
+    e.preventDefault();
+    const fullName = document.getElementById("adminFullName").value.trim();
+    const email = document.getElementById("adminEmail").value.trim();
+    const password = document.getElementById("adminPassword").value;
+    const confirmPassword = document.getElementById("adminConfirmPassword").value;
+    const btn = document.getElementById("createAdminBtn");
+
+    showAlert("createAdminAlert", "");
+
+    if (!fullName || !email || !password || !confirmPassword) {
+        showAlert("createAdminAlert", "All fields are required.");
+        return;
+    }
+
+    if (!email.includes("@") || !email.includes(".")) {
+        showAlert("createAdminAlert", "Please enter a valid email address.");
+        return;
+    }
+
+    if (password !== confirmPassword) {
+        showAlert("createAdminAlert", "Passwords do not match.");
+        return;
+    }
+
+    const currentUser = getCurrentUser();
+    if (!currentUser || currentUser.role !== "ADMIN") {
+        showAlert("createAdminAlert", "Unauthorized: Only administrators can create new admin accounts.");
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = "Creating...";
+
+    try {
+        const res = await fetch(`${API_BASE}/admin/create`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Admin-Email": currentUser.email
+            },
+            body: JSON.stringify({
+                fullName,
+                email,
+                password,
+                confirmPassword,
+                requesterEmail: currentUser.email
+            })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+            showAlert("createAdminAlert", data.message || "Administrator account created successfully!", "success");
+            document.getElementById("createAdminForm").reset();
+            loadAdminUsers();
+        } else {
+            showAlert("createAdminAlert", data.message || "Failed to create administrator.");
+        }
+    } catch (err) {
+        showAlert("createAdminAlert", "Server communication error. Please try again.");
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "Create Admin";
     }
 }
